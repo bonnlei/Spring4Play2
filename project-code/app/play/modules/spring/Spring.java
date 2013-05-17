@@ -13,22 +13,22 @@ public class Spring {
     }
     
     public static <T> T getBeanOfType(Class<T> type) {
-        Map<String, Object> beans = getBeansOfType(type);
+        Map<String, T> beans = getBeansOfType(type);
         if(beans.isEmpty()) {
             return null;
         }
         return (T)beans.values().iterator().next();
     }
-    
+
     public static Object getBeanOfType(String type) {
         try {
             return getBeanOfType(Play.application().classloader().loadClass(type));
         } catch (ClassNotFoundException ex) {
-        	throw new RuntimeException(ex);
+            throw new RuntimeException(ex);
         }
     }
-    
-    public static <T> Map<String, T> getBeansOfType(Class type) {
+
+    public static <T> Map<String, T> getBeansOfType(Class<T> type) {
         if (SpringPlugin.applicationContext == null) {
             throw new RuntimeException("Unable to obtain spring bean because the application context has not been defined."); 
         }

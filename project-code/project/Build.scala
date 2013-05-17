@@ -1,28 +1,28 @@
 import sbt._
 import Keys._
-import PlayProject._
+import play.Project._
 
 object ApplicationBuild extends Build {
 
-    val appName         = "spring"
-    val appVersion      = "1.0-SNAPSHOT"
+  val appName         = "spring4play21"
+  val appVersion      = "1.0-SNAPSHOT"
 
-    val appDependencies = Seq(
-            "org.springframework"    %    "spring-context"    %    "3.0.7.RELEASE",
-            "org.springframework"    %    "spring-core"       %    "3.0.7.RELEASE",
-            "org.springframework"    %    "spring-beans"      %    "3.0.7.RELEASE"
-    )
+  val springVersion = "3.1.4.RELEASE"
+  val springPackage = "org.springframework"
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
-        organization := "play",
-        publishMavenStyle := true,
-        publishTo <<= (version) { version: String =>
-            val nexus = "https://maven.library.tamu.edu/content/repositories/"
-            if (version.trim.endsWith("SNAPSHOT")) 
-                Some("TAMU Snapshot Repository" at nexus + "snapshots/") 
-            else                                   
-                Some("TAMU Release Repository"  at nexus + "releases/")
-           },
-        credentials += Credentials(file(Path.userHome + "/.mavenCredentials"))
+  val appDependencies = {
+    Seq(
+      springPackage % "spring-context" % springVersion,
+      springPackage % "spring-core" % springVersion,
+      springPackage % "spring-beans" % springVersion
     )
+  }
+
+  val main = play.Project(appName, appVersion, appDependencies).settings(
+    // Add your own project settings here
+    scalacOptions ++= Seq("-unchecked", "-deprecation"),
+    javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
+  )
+
+
 }
