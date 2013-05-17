@@ -1,26 +1,17 @@
-# Spring Module for Play 2.0 #
+# Spring Module for Play 2.1.1 #
 
-This module helps you integrate Spring managed beans directly within your play 2.0
+This module helps you integrate Spring managed beans directly within your play 2.1.1
 application. This module is a continuation of [Nicolas Leroux](https://github.com/pepite)'s
 original Spring Module for play 1.x, available on [Github](https://github.com/pepite/Play--framework-Spring-module)
 
 ## Install ##
 
-For the immediate future this plugin is available from the Texas A&M University's local unindexed
-Maven repository. In the future when the new modules site is ready at 
-`http://modules.playframework.org` this plugin will be deployed there. Until then you can use A&M's
-local repository, but since it is not indexed by Maven Central you will need to add the repository
-explicitly in your sbt build configuration.
+To install this plugin, you will have to download the project and run
 
-Add the dependency shown below on this module, along with the definition for TAMU's maven repository.
+```sbt package```
 
-    val appDependencies = Seq(
-        "play" % "spring_2.9.1" % "2.0"
-    )
-    
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = JAVA).settings(
-        resolvers += "TAMU Release Repository" at "https://maven.library.tamu.edu/content/repositories/releases/"
-    )
+Then copy the jar file (i.e. target/scala-2.10/spring4play21_2.10-1.0-SNAPSHOT.jar) to
+your Play project's library (usually in the lib directory).
 
 ## Configuration ##
 
@@ -45,6 +36,66 @@ spring context file by simply using `${ ... }`.
      
     spring.add-play-properties = true
     # Defaults to true
+
+### Play Configuration For Spring Application Context ###
+
+    # For Spring Data MongoDB
+    spring {
+        mongodb.host=localhost
+        mongodb.port=27017
+        mongodb.database=mydb
+        mongodb.username=myuser
+        mongodb.password=mypass
+    }
+
+### Example application-context.xml For Spring Data MongoDB ###
+
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <beans xmlns="http://www.springframework.org/schema/beans"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:context="http://www.springframework.org/schema/context"
+              xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+              xmlns:util="http://www.springframework.org/schema/util"
+              xsi:schemaLocation=
+              "http://www.springframework.org/schema/context
+              http://www.springframework.org/schema/context/spring-context-3.0.xsd
+              http://www.springframework.org/schema/data/mongo
+              http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd
+              http://www.springframework.org/schema/beans
+              http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+              http://www.springframework.org/schema/util
+              http://www.springframework.org/schema/util/spring-util.xsd">
+
+
+
+
+        <context:annotation-config />
+        <context:component-scan base-package="beans" />
+
+        <mongo:mongo host="${mongodb.host}" port="${mongodb.port}"/>
+
+        <mongo:db-factory id="mongoDbFactory" dbname="${mongodb.database}"
+                          username="${mongodb.username}"
+                          password="${mongodb.password}" mongo-ref="mongo"/>
+
+        <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+            <constructor-arg ref="mongoDbFactory" />
+            <property name="writeConcern">
+                <util:constant static-field="com.mongodb.WriteConcern.SAFE" ></util:constant>
+            </property>
+        </bean>
+
+        <mongo:repositories base-package="beans" mongo-template-ref="mongoTemplate"/>
+
+        <mongo:mapping-converter id="converter" />
+
+        <bean id="gridTemplate" class="org.springframework.data.mongodb.gridfs.GridFsTemplate">
+            <constructor-arg ref="mongoDbFactory" />
+            <constructor-arg ref="converter" />
+        </bean>
+
+    </beans>
     
 
 ## How To Use Play With Spring ##
